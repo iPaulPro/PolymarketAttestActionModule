@@ -384,9 +384,6 @@ Clients can use this to determine the market to display as part of the publicati
 The [@polymarket/clob-client](https://www.npmjs.com/package/@polymarket/clob-client) library can be used to query a Market by Condition ID and create an Order.
 
 ```ts  
-import { ClobClient, Side } from "@polymarket/clob-client";
-import { getProxyWalletAddress, getProxyWalletSigner } from "@polymarket/sdk";
-
 const market = await clobClient.getMarket(conditionId);
 const order = await clobClient.createOrder({
     tokenId: market.clobTokenIds[0],
