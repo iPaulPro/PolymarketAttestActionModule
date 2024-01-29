@@ -151,7 +151,7 @@ contract PolymarketTradingActionModule is
      * @param profileId ID of the profile.
      * @param pubId ID of the publication.
      * @param data Initialization calldata.
-     * @return The initialization calldata as well as the binary outcome position IDs (token IDs).
+     * @return The Condition ID and array of the Position IDs (Binary Outcome Token IDs).
      */
     function initializePublicationAction(
         uint256 profileId,
@@ -181,7 +181,7 @@ contract PolymarketTradingActionModule is
         // Emit the MarketRegistered event
         emit MarketRegistered(profileId, pubId, conditionId);
 
-        return abi.encode(data, [yesTokenId, noTokenId]);
+        return abi.encode(conditionId, [yesTokenId, noTokenId]);
     }
 
     function processPublicationAction(
