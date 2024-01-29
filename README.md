@@ -2,6 +2,18 @@
 
 Specifications for enabling trading on Polymarket via Open Action Modules in Lens Protocol Publications.
 
+## Table of Contents
+
+- [Polymarket Brief](#polymarket-brief)
+- [Exchange Deployments](#exchange-deployments)
+- [Polymarket.com URLs](#polymarketcom-urls)
+- [Gamma Markets API (GraphQL)](#gamma-markets-api-graphql)
+- [Central Limit Order Book (CLOB) API](#central-limit-order-book-clob-api)
+- [Open Action Modules](#open-action-modules)
+- [Client Implementation](#client-implementation)
+  - [Proxy Wallets](#proxy-wallets)
+  - [Prices and Books](#prices-and-books)
+
 ## Polymarket Brief
 
 Polymarket allows users to bet on the outcome of future events in a wide range of topics, like sports, politics, and pop culture. Polymarket's Order Book, also referred to as the "CLOB" (Central Limit Order Book) or "BLOB" (Binary Limit Order Book), is hybrid-decentralized wherein there is an operator that provides off-chain matching/ordering/execution services while settlement happens on-chain, non-custodially according to instructions provided by users in the form of signed order messages.
@@ -335,15 +347,21 @@ const chainId = process.env.CHAIN_ID ?? 137;
 const provider = new providers.Web3Provider(window.ethereum);
 const signer = provider.getSigner();
 
-// Initialize the CLOB client
+// Initialize the Level 1 CLOB client
 const clobClient = new ClobClient(host, chainId, signer);
 
-// Create the required API key for the L2 Client
+// Create the required API key for the Level 2 Client (if not already created)
+// This creates a wallet signing prompt
 const apiKeyCreds = await clobClient.createApiKey();
 
-// Initialize the L2 CLOB Client (capable of placing orders)
+// Initialize the L2 CLOB Client
 const l2ClobClient = new ClobClient(clobApiUrl, chain.id, signer, apiKeyCreds);
 ```
+
+### Notes   
+- A "Level 1" CLOB Client is created with a wallet. It's required for making orders and creating API Keys.
+- For all other CLOB API calls, a "Level 2" CLOB Client is required.
+- The Level 2 CLOB Client is initialized with an API Key, which can be created by signing a message with a L1 Client.
 
 ## Open Action Modules
 
@@ -378,7 +396,7 @@ Clients can use this to determine the market to display as part of the publicati
 The [@polymarket/clob-client](https://www.npmjs.com/package/@polymarket/clob-client) library can be used to query a Market by Condition ID and create an Order.
 
 ```ts
-// A Level 2 CLOB Client (with API credentials) is required to place orders
+// A Level 2 CLOB Client (with API credentials) is required to query markets
 const clobClient = new ClobClient(host, chain, signer, creds);
 
 // Get the Market by Condition ID
