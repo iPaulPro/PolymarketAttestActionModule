@@ -327,7 +327,7 @@ The `conditionId` is the main identifier used for Markets. The `clob_token_ids` 
 
 The Polymarket CLOB API plays the role of "Operator" and matches open orders. The  `@polymarkey/clob-client` library can be used to place orders, as well as query Markets and open orders.
 
-Here's an example of how to use the library to create an order:
+Here's an example of how to set up the CLOB client to place orders:
 
 ```js
 const host = process.env.CLOB_API_URL ?? "https://clob.polymarket.com";
@@ -335,20 +335,14 @@ const chainId = process.env.CHAIN_ID ?? 137;
 const provider = new providers.Web3Provider(window.ethereum);
 const signer = provider.getSigner();
 
-// Initialize the clob client
+// Initialize the CLOB client
 const clobClient = new ClobClient(host, chainId, signer);
 
-// Build the L1 and L2 headers
-await clobClient.createOrDeriveApiKey();
+// Create the required API key for the L2 Client
+const apiKeyCreds = await clobClient.createApiKey();
 
-// Create a buy order for 100 NO for 0.50c
-const order = await clobClient.createOrder({
-    tokenId: "48331043336612883890938759509493159234755048973500640148014422747788308965732",
-    price: 0.5,
-    side: Side.Buy,
-    size: 100,
-    feeRateBps: 0,
-});
+// Initialize the L2 CLOB Client (capable of placing orders)
+const l2ClobClient = new ClobClient(clobApiUrl, chain.id, signer, apiKeyCreds);
 ```
 
 ## Open Action Modules
@@ -383,14 +377,20 @@ Clients can use this to determine the market to display as part of the publicati
 
 The [@polymarket/clob-client](https://www.npmjs.com/package/@polymarket/clob-client) library can be used to query a Market by Condition ID and create an Order.
 
-```ts  
+```ts
+// A Level 2 CLOB Client (with API credentials) is required to place orders
+const clobClient = new ClobClient(host, chain, signer, creds);
+
+// Get the Market by Condition ID
 const market = await clobClient.getMarket(conditionId);
-const order = await clobClient.createOrder({
-    tokenId: market.clobTokenIds[0],
-    price: 0.5,
-    side: Side.Buy,
+
+// A "YES" Binary Outcome Token ID
+const tokenId = market.clobTokenIds[0];
+
+// Create a market buy order (no price specified) for 100 "YES" shares
+const order = await clobClient.createMarketBuyOrder({
+    tokenId,
     size: 100,
-    feeRateBps: 0,
 });
 const resp = await clobClient.postOrder(order);
 ```
@@ -460,6 +460,19 @@ Which returns
 {
     "price": "0.48"
 }
+```
+
+Or the midpoint:
+
+```ts
+// Get the midpoint price for a market (halfway between best bid or best ask)
+const midpoint = await clobClient.getMidpoint(tokenId);
+```
+
+and 
+
+```
+https://clob.polymarket.com/midpoint?token_id=[TOKEN_ID]
 ```
 
 #### Order Book
