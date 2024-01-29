@@ -86,6 +86,8 @@ contract PolymarketTradingActionModule is
      * @param lensHub Address of the LensHub contract.
      * @param lensModuleRegistry Address of the Lens ModuleRegistry contract.
      * @param exchange Address of the Polymarket CTF Exchange contract.
+     * @param collateralToken Address of the Polymarket CTF collateral token (USDC.e).
+     * @param conditionalTokens Address of the Polymarket Conditional Tokens contract.
      */
     constructor(
         address lensHub,
@@ -146,8 +148,8 @@ contract PolymarketTradingActionModule is
     }
 
     /**
-     * @dev Initializes the PolymarketTradingActionModule contract. The initialization calldata is just the
-     * Polymarket Market Condition ID. Clients can use this to display Market data and related actions.
+     * @dev Initializes the module. The initialization calldata is just the Polymarket Market Condition ID.
+     * Clients can use this to display Market data and related actions.
      * @param profileId ID of the profile.
      * @param pubId ID of the publication.
      * @param data Initialization calldata.
@@ -184,6 +186,13 @@ contract PolymarketTradingActionModule is
         return abi.encode(conditionId, [yesTokenId, noTokenId]);
     }
 
+    /**
+     * @dev Processes a Polymarket market order. This function primarily ensures that the order
+     * token matches the registered Condition ID for the publication, the signer of
+     * the Order is the same as the Actor, and the order is valid.
+     * @param params Parameters for the action module including the Order tuple.
+     * @return The Order hash.
+     */
     function processPublicationAction(
         Types.ProcessActionParams calldata params
     ) external override onlyHub returns (bytes memory) {
