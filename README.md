@@ -443,7 +443,7 @@ struct Order {
 
 ## Client Implementation
 
-The [@polymarket/clob-client](https://www.npmjs.com/package/@polymarket/clob-client) library can be used to query a Market by Condition ID and create an Order.
+The [@polymarket/clob-client](https://www.npmjs.com/package/@polymarket/clob-client) library can be used to query a Market by Condition ID and place an Order.
 
 ```ts
 // A Level 2 CLOB Client (with API credentials) is required to query markets
@@ -453,7 +453,7 @@ const clobClient = new ClobClient(host, chain, signer, creds);
 const market = await clobClient.getMarket(conditionId);
 
 // A "YES" Binary Outcome Token ID
-const tokenId = market.clobTokenIds[0];
+const tokenId = market.clob_token_ids[0];
 
 // Create a market buy order (no price specified) for 100 "YES" shares
 const order = await clobClient.createMarketBuyOrder({
