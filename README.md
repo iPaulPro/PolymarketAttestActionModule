@@ -395,6 +395,7 @@ const order = await clobClient.createOrder({
     size: 100,
     feeRateBps: 0,
 });
+const resp = await clobClient.postOrder(order);
 ```
 
 Or you can use the API directly to query the Market:

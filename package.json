@@ -1,8 +1,8 @@
 {
-  "name": "Polymarket Buy Open Action",
+  "name": "Polymarket Trading Open Action",
   "version": "1.0.0",
   "description": "Trading on Polymarket via Open Action Modules in Lens Protocol Publications.",
-  "main": "contracts/PolymarketBuyActionModule.sol",
+  "main": "contracts/PolymarketTradingActionModule.sol",
   "scripts": {
     "compile": "hardhat compile",
     "clean": "hardhat clean",

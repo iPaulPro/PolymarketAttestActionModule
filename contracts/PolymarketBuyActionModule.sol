@@ -15,10 +15,10 @@ import {IConditionalTokens} from "./interfaces/IConditionalTokens.sol";
 import {LensModuleRegistrant} from "./base/LensModuleRegistrant.sol";
 
 /**
- * @title PolymarketBuyActionModule
+ * @title PolymarketTradingActionModule
  * @dev Open Action Module for buying Polymarket markets.
  */
-contract PolymarketBuyActionModule is
+contract PolymarketTradingActionModule is
     IPublicationActionModule,
     HubRestricted,
     LensModuleMetadata,
@@ -82,7 +82,7 @@ contract PolymarketBuyActionModule is
     IConditionalTokens internal immutable _conditionalTokens;
 
     /**
-     * @dev Initializes the PolymarketBuyActionModule contract.
+     * @dev Initializes the PolymarketTradingActionModule contract.
      * @param lensHub Address of the LensHub contract.
      * @param lensModuleRegistry Address of the Lens ModuleRegistry contract.
      * @param exchange Address of the Polymarket CTF Exchange contract.
@@ -146,7 +146,7 @@ contract PolymarketBuyActionModule is
     }
 
     /**
-     * @dev Initializes the PolymarketBuyActionModule contract. The initialization calldata is just the
+     * @dev Initializes the PolymarketTradingActionModule contract. The initialization calldata is just the
      * Polymarket Market Condition ID. Clients can use this to display Market data and related actions.
      * @param profileId ID of the profile.
      * @param pubId ID of the publication.
