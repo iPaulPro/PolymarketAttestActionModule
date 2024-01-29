@@ -1,0 +1,21 @@
+{
+  "name": "Polymarket Buy Open Action",
+  "version": "1.0.0",
+  "description": "Trading on Polymarket via Open Action Modules in Lens Protocol Publications.",
+  "main": "contracts/PolymarketBuyActionModule.sol",
+  "scripts": {
+    "compile": "hardhat compile",
+    "clean": "hardhat clean",
+    "prettier": "prettier --write 'contracts/**/*.sol'"
+  },
+  "keywords": [],
+  "author": "Paul Burke <paul@paulburke,co>",
+  "license": "MIT",
+  "devDependencies": {
+    "@openzeppelin/contracts": "^5.0.1",
+    "hardhat": "^2.19.4",
+    "lens-modules": "^1.0.1",
+    "prettier": "^3.2.4",
+    "prettier-plugin-solidity": "^1.3.1"
+  }
+}
