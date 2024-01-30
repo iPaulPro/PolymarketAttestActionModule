@@ -465,7 +465,18 @@ const order = await clobClient.createMarketBuyOrder({
 const resp = await clobClient.postOrder(order, OrderType.FOK);
 ```
 
-Note that you can alternatively use `clobClient.createOrder()` to create a limit order (specify the amount of shares to buy at a specific price). If no market price is available (`clobClient.getPrice()` returns "0") then orders must be placed as a limit order with the "midpoint" price (`clobClient.getMidpoint()`). Otherwise, the order will fail.
+Note that you can alternatively use `clobClient.createOrder()` to create a limit order (specify the amount of shares to buy at a specific price). If no market price is available (`clobClient.getPrice()` returns "0") then orders must be placed as a limit order with the "midpoint" price (`clobClient.getMidpoint()`). Otherwise, the order will fail. Eg:
+
+```ts
+const midRes = await clobClient.getMidpoint(tokenID);
+const price = Number.parseFloat(midRes.mid);
+const order = await clobClient.createOrder({
+  tokenID,
+  size: 100, // 100 shares
+  price,
+  side: Side.BUY,
+})
+```
 
 Or you can use the API directly to query the Market:
 ```
