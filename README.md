@@ -18,9 +18,15 @@ Specifications for enabling trading on Polymarket via Open Action Modules in Len
 
 Polymarket allows users to bet on the outcome of future events in a wide range of topics, like sports, politics, and pop culture. Polymarket's Order Book, also referred to as the "CLOB" (Central Limit Order Book) or "BLOB" (Binary Limit Order Book), is hybrid-decentralized wherein there is an operator that provides off-chain matching/ordering/execution services while settlement happens on-chain, non-custodially according to instructions provided by users in the form of signed order messages.
 
+<img src="./assets/polymarket-event.jpg" width="360">
+
 Underlying the exchange system is a custom Exchange contract that facilitates atomic swaps (settlement) between binary Outcome Tokens (both CTF ERC1155 assets and ERC20 PToken assets) and a collateral asset (ERC20) according to signed limit orders.
 
+<img src="./assets/polymarket-order.jpg" width="360">
+
 Orders are represented as signed typed structured data (EIP712). When orders are matched, one side is considered the maker and the other side is considered the taker. The Operator is responsible for matching, ordering, and submitting matched trades to the underlying blockchain network for execution. As such, order placement and canellation can happen immediately off-chain while only the settlement action must occur on-chain.
+
+<img src="./assets/polymarket-spread.jpg" width="360">
 
 The docs for Polymarket can be found at https://docs.polymarket.com.
 
@@ -465,7 +471,7 @@ const order = await clobClient.createMarketBuyOrder({
 const resp = await clobClient.postOrder(order, OrderType.FOK);
 ```
 
-Note that you can alternatively use `clobClient.createOrder()` to create a limit order (specify the amount of shares to buy at a specific price). If no market price is available (`clobClient.getPrice()` returns "0") then orders must be placed as a limit order with the "midpoint" price (`clobClient.getMidpoint()`). Otherwise, the order will fail. Eg:
+Note that you can also create limit orders (specify the amount of shares to buy at a specific price). If no market price is available (`clobClient.getPrice()` returns "0") then orders must be placed as a limit order with the "midpoint" price, otherwise, the order will fail. Eg:
 
 ```ts
 const midRes = await clobClient.getMidpoint(tokenID);
@@ -478,7 +484,8 @@ const order = await clobClient.createOrder({
 })
 ```
 
-Or you can use the API directly to query the Market:
+You can also use the API directly to query the Market:
+
 ```
 GET {clob-endpoint}/markets/{condition_id}
 ```
@@ -517,7 +524,6 @@ const proxyAddress = getProxyWalletAddress(
     '0x...', // address which owns the proxy wallet we want to calculate
 );
 ```
-
 
 ### Prices and Books
 
