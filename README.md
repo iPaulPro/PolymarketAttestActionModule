@@ -371,7 +371,9 @@ const l2ClobClient = new ClobClient(clobApiUrl, chain.id, signer, apiKeyCreds);
 
 ## Open Action Modules
 
-The first Polymarket Open Action will enable buying shares on a market directly from a Lens publication. All that's needed for initialization of the Open Action module is the Condition ID of the market being shared.
+The first Polymarket Open Action will enable buying shares on a market directly from a Lens publication. Orders are first placed with the Polymarket CLOB API Operator, then submitted to the `PolymarketTradingActionModule` which validates and attests that the actor is the signer of the Polymarket order.
+
+All that's needed for initialization of the Open Action module is the Condition ID of the market being shared.
 
 The initialization calldata ABI is:
 
@@ -401,7 +403,7 @@ Here's the ABI of the initializeResultData:
 ]
 ```
 
-Clients can use this to determine the market to display as part of the publication. To create an order, the process calldata ABI expects an instance of an `Order`:
+Clients can use this to determine the market to display as part of the publication. The Binary Outcome Token IDs are provided for convenience. To validate and register an order, the process calldata ABI expects an instance of an `Order`:
 
 ```json
 [
