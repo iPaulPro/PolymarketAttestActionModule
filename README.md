@@ -446,22 +446,26 @@ struct Order {
 The [@polymarket/clob-client](https://www.npmjs.com/package/@polymarket/clob-client) library can be used to query a Market by Condition ID and place an Order.
 
 ```ts
-// A Level 2 CLOB Client (with API credentials) is required to query markets
+// A Level 2 CLOB Client (with API credentials) is required to query markets (which includes placing "market" orders)
 const clobClient = new ClobClient(host, chain, signer, creds);
 
 // Get the Market by Condition ID
 const market = await clobClient.getMarket(conditionId);
 
 // A "YES" Binary Outcome Token ID
-const tokenId = market.clob_token_ids[0];
+const tokenID = market.tokens.find(token => token.outcome === "Yes").token_id;
 
-// Create a market buy order (no price specified) for 100 "YES" shares
+// Create a market buy order (no price specified) for $15 worth of shares
 const order = await clobClient.createMarketBuyOrder({
-    tokenId,
-    size: 100,
+  tokenId,
+  amount: 15, // 15 USDC (collateral)
 });
-const resp = await clobClient.postOrder(order);
+
+// Place the order as Fill or Kill (FOK)
+const resp = await clobClient.postOrder(order, OrderType.FOK);
 ```
+
+Note that you can alternatively use `clobClient.createOrder()` to create a limit order (specify the amount of shares to buy at a specific price). If no market price is available (`clobClient.getPrice()` returns "0") then orders must be placed as a limit order with the "midpoint" price (`clobClient.getMidpoint()`). Otherwise, the order will fail.
 
 Or you can use the API directly to query the Market:
 ```
