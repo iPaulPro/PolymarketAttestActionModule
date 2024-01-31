@@ -69,116 +69,22 @@ If the user is sharing a link with only the event slug, they should be presented
 https://strapi-matic.poly.market/events?slug=presidential-election-winner-2024
 ```
 
-returns:
+returns (most fields omitted for brevity):
 
 ```json
 [
   {
     "id": 903193,
-    "ticker": "presidential-election-winner-2024",
     "slug": "presidential-election-winner-2024",
     "title": "Presidential Election Winner 2024",
-    "subtitle": null,
     "description": "This is a market group on who will win the 2024 US Presidential Election (POTUS)",
-    "resolution_source": "",
-    "start_date": "2024-01-04T22:58:15.194Z",
-    "creation_date": "2024-01-04T23:04:57.844Z",
     "end_date": "2024-11-05",
-    "tags": [...],
-    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Seal_of_the_President_of_the_United_States.svg/2424px-Seal_of_the_President_of_the_United_States.svg.png",
-    "icon": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Seal_of_the_President_of_the_United_States.svg/2424px-Seal_of_the_President_of_the_United_States.svg.png",
-    "active": true,
-    "closed": false,
-    "archived": false,
-    "new": false,
-    "featured": false,
-    "restricted": true,
-    "liquidity": 15829913.04,
-    "volume": 22141520.71,
-    "open_interest": 0,
-    "sort_by": "ascending",
-    "category": null,
-    "subcategory": null,
-    "is_template": null,
-    "review_status": "deployed",
-    "template_variables": null,
-    "published_at": "2024-01-04T17:33:51.448Z",
-    "created_at": "2024-01-04T17:33:51.470Z",
-    "updated_at": "2024-01-29T12:02:00.280Z",
-    "comments_enabled": false,
-    "competitive": 0,
-    "volume_24hr": 793257.05,
-    "featured_image": "",
-    "parent_event": null,
-    "disqus_thread": null,
-    "creator": null,
-    "edited_by": null,
-    "enable_order_book": true,
-    "last_updated_at_cron": "2024-01-29T12:01:46.249Z",
-    "volume_amm": 0,
-    "volume_clob": 22141520.71,
-    "liquidity_amm": 0,
-    "liquidity_clob": 15829913.04,
-    "volume_24hr_amm": 0,
-    "volume_24hr_clob": 793257.05,
-    "end_time": null,
-    "end_time_zone": null,
-    "neg_risk": true,
-    "neg_risk_market_id": "0xe3b1bc389210504ebcb9cffe4b0ed06ccac50561e0f24abb6379984cec030f00",
-    "neg_risk_fee_bips": 0,
-    "comment_count": 62,
-    "image_optimized": {
-      "id": 397687,
-      "image_url_source": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Seal_of_the_President_of_the_United_States.svg/2424px-Seal_of_the_President_of_the_United_States.svg.png",
-      "image_url_optimized": "https://polymarket-upload.s3.us-east-2.amazonaws.com/presidenti_29ab78ad2c3c75fb97e1ba00cfb6a8ea_256x256_qual_100.webp",
-      "image_size_kb_source": 1149.416,
-      "image_size_kb_optimized": 38.236,
-      "image_optimized_complete": true,
-      "image_optimized_last_updated": "2024-01-06T19:59:12.154Z",
-      "size_factor": null,
-      "reoptimize_image": false,
-      "quality_factor": "100"
-    },
-    "featured_image_optimized": null,
-    "icon_optimized": {
-      "id": 397688,
-      "image_url_source": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Seal_of_the_President_of_the_United_States.svg/2424px-Seal_of_the_President_of_the_United_States.svg.png",
-      "image_url_optimized": "https://polymarket-upload.s3.us-east-2.amazonaws.com/presidenti_f8c9bd0b9e6f98a95628bd3c568d8a37_40x40_qual_100.webp",
-      "image_size_kb_source": 1149.416,
-      "image_size_kb_optimized": 3.222,
-      "image_optimized_complete": true,
-      "image_optimized_last_updated": "2024-01-06T19:59:13.509Z",
-      "size_factor": null,
-      "reoptimize_image": false,
-      "quality_factor": "100"
-    },
-    "series": [],
-    "collections": [],
     "markets": [
       {
         "id": 253591,
         "question": "Will Donald Trump win the 2024 US Presidential Election?",
         "conditionId": "0xdd22472e552920b8438158ea7238bfadfa4f736aa4cee91a6b86c39ead110917",
         "slug": "will-donald-trump-win-the-2024-us-presidential-election",
-        "twitter_card_image": null,
-        "resolution_source": "",
-        "end_date": "November 5, 2024",
-        "category": null,
-        "amm_type": null,
-        "liquidity": "1051236.7655",
-        "sponsor_name": null,
-        "sponsor_image": null,
-        "start_date": "2024-01-04T22:58:15.194Z",
-        "x_axis_value": null,
-        "y_axis_value": null,
-        "denomination_token": null,
-        "fee": "20000000000000000",
-        "image": "data:image/jpeg;base64,[...]",
-        "icon": "data:image/jpeg;base64,[...]",
-        "lower_bound": null,
-        "upper_bound": null,
-        "description": "This market will resolve to “Yes” if Donald J. Trump wins the 2024 US Presidential Election. Otherwise, this market will resolve to “No.”\n\nThe resolution source for this market is the Associated Press, Fox News, and NBC. This market will resolve once all three sources call the race for the same candidate. If all three sources haven’t called the race for the same candidate by the inauguration date (January 20, 2025) this market will resolve based on who is inaugurated.",
-        "tags": [],
         "outcomes": [
           "Yes",
           "No"
@@ -187,127 +93,12 @@ returns:
           "0.545",
           "0.455"
         ],
-        "volume": "3384587.695823",
-        "active": true,
-        "market_type": "normal",
-        "format_type": null,
-        "lower_bound_date": null,
-        "upper_bound_date": null,
-        "closed": false,
-        "marketMakerAddress": null,
-        "created_at": "2024-01-04T17:33:51.332Z",
-        "updated_at": "2024-01-29T12:01:19.043Z",
-        "closed_time": null,
-        "wide_format": false,
-        "new": false,
-        "sent_discord": null,
-        "mailchimp_tag": null,
-        "featured": false,
-        "submitted_by": "0x91430CaD2d3975766499717fA0D66A78D814E5c5",
-        "subcategory": null,
-        "category_mailchimp_tag": null,
-        "twitter_card_location": null,
-        "twitter_card_last_refreshed": null,
-        "twitter_card_last_validated": null,
-        "archived": false,
-        "resolved_by": "0x2F5e3684cb1F318ec51b00Edba38d79Ac2c0aA9d",
-        "restricted": true,
-        "market_group": null,
-        "group_item_title": "Donald Trump",
-        "group_item_threshold": "1",
         "questionID": "0xe3b1bc389210504ebcb9cffe4b0ed06ccac50561e0f24abb6379984cec030f00",
-        "uma_end_date": null,
-        "uma_end_time": null,
-        "enable_order_book": true,
-        "order_price_min_tick_size": 0.01,
-        "order_min_size": 5,
-        "uma_resolution_status": null,
-        "curation_order": null,
-        "volume_num": 3384587.7,
-        "liquidity_num": 1051236.77,
-        "end_date_iso": "2024-11-05",
-        "start_date_iso": "2024-01-04",
-        "uma_end_date_iso": null,
-        "has_reviewed_dates": true,
-        "request_time": null,
-        "initial_liquidity": 1,
-        "initial_liquidity_odds": 0.5,
-        "game_start_time": null,
-        "seconds_delay": 0,
         "clob_token_ids": [
           "21742633143463906290569050155826241533067272736897614950488156847949938836455",
           "48331043336612883890938759509493159234755048973500640148014422747788308965732"
         ],
-        "competitive": 0.9979790923380155,
-        "ticker": null,
-        "event_title": null,
-        "is_template": null,
-        "template_variables": null,
-        "review_status": "deployed",
-        "ready_for_cron": null,
-        "comments_enabled": false,
-        "volume_24hr": 77467.45,
-        "min_incentive_size": null,
-        "max_incentive_spread": null,
-        "last_updated_at_cron": "2024-01-29T12:00:05.699Z",
-        "short_outcomes": null,
-        "disqus_thread": null,
-        "sent_discord_active": false,
-        "sent_discord_closed": false,
-        "sent_slack_active": false,
-        "sent_slack_closed": false,
-        "sent_twitter_active": false,
-        "sent_twitter_closed": false,
-        "uma_bond": "99750.0",
-        "uma_reward": "500.0",
-        "fpmmLive": true,
-        "outcome_team_a": null,
-        "outcome_team_b": null,
-        "volume_24hr_amm": 0,
-        "volume_24hr_clob": 77467.45,
-        "volume_amm": 0,
-        "volume_clob": 3384587.7,
-        "liquidity_amm": 0,
-        "liquidity_clob": 1051236.77,
-        "end_time": null,
-        "end_time_zone": null,
-        "maker_base_fee": 0,
-        "taker_base_fee": 0,
-        "custom_liveness": 0,
-        "accepting_orders": true,
-        "notifications_enabled": true,
-        "neg_risk": true,
-        "neg_risk_market_id": "0xe3b1bc389210504ebcb9cffe4b0ed06ccac50561e0f24abb6379984cec030f00",
-        "neg_risk_request_id": "0xc2d6714f691eacd6ec494c7d6e5eaaf7dfba8907dcaf55b2dd93e7b479da1605",
-        "comment_count": 22,
-        "use_cases": [],
-        "seo": null,
-        "image_optimized": null,
-        "icon_optimized": null
-      }
-    ],
-    "categories": [
-      {
-        "id": 5482,
-        "label": "Elections",
-        "parent_category": 5481,
-        "slug": "elections",
-        "published_at": "2022-06-30T14:05:17.603Z",
-        "created_at": "2022-06-30T14:05:16.444Z",
-        "updated_at": "2023-10-18T16:34:07.905Z"
-      }
-    ],
-    "review_comments": [],
-    "sub_events": [],
-    "tags_relations": [
-      {
-        "id": 24,
-        "label": "US election",
-        "force_show": true,
-        "published_at": "2023-11-02T21:04:03.712Z",
-        "created_at": "2023-11-02T21:04:03.723Z",
-        "updated_at": "2023-11-14T16:59:10.381Z",
-        "force_hide": null
+        "accepting_orders": true
       }
     ]
   }
@@ -339,7 +130,25 @@ Returns something like (most fields omitted for brevity):
 ```
 
 ### Notes
-The `conditionId` is the main identifier used for Markets. The `clob_token_ids` field contains the ERC1155 Outcome Token IDs for the market. These are used to create "yes" or "no" orders.
+ - The `conditionId` is the main identifier used for Markets. 
+ - The `clob_token_ids` field contains the ERC1155 Outcome Token IDs for the market. These are used to create orders.
+ - The Gamma Markets API can be used without authentication, while the CLOB API requires an API key for any market-related calls.
+ - The data returned from the Gamma Markets API is in a different shape than the data returned from the Polymarket CLOB API. For example, the Token IDs are returned in this form from the CLOB API:
+
+    ```json
+    "tokens": [
+        {
+            "token_id": "45192470599548595159090094230221802571282664878863077053730623624685503357046",
+            "outcome": "Yes",
+            "winner": false
+        },
+        {
+            "token_id": "104708316105117381625931018009191103815070143757312220500640690567229192101989",
+            "outcome": "No",
+            "winner": false
+        }
+    ]
+    ```
 
 ## Central Limit Order Book (CLOB) API
 
@@ -469,8 +278,8 @@ const order = await clobClient.createMarketBuyOrder({
   amount: 15, // 15 USDC (collateral)
 });
 
-// Place the order as Fill or Kill (FOK)
-const resp = await clobClient.postOrder(order, OrderType.FOK);
+// Place the order
+const resp = await clobClient.postOrder(order);
 ```
 
 Note that you can also create limit orders (specify the amount of shares to buy at a specific price). If no market price is available (`clobClient.getPrice()` returns "0") then orders must be placed as a limit order with the "midpoint" price, otherwise, the order will fail. Eg:
