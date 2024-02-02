@@ -9,7 +9,7 @@ import {IPublicationActionModule} from "lens-modules/contracts/interfaces/IPubli
 import {HubRestricted} from "lens-modules/contracts/base/HubRestricted.sol";
 import {LensModuleMetadata} from "lens-modules/contracts/modules/LensModuleMetadata.sol";
 
-import {Order} from "./libraries/OrderStructs.sol";
+import {Order, OrderStatus} from "./libraries/OrderStructs.sol";
 import {ICTFExchange} from "./interfaces/ICTFExchange.sol";
 import {IConditionalTokens} from "./interfaces/IConditionalTokens.sol";
 import {LensModuleRegistrant} from "./base/LensModuleRegistrant.sol";
@@ -59,6 +59,7 @@ contract PolymarketTradingActionModule is
     error ConditionIdNotRegistered();
     error ConditionIdDoesNotMatch();
     error OrderNotSignedByActor();
+    error OrderInvalid();
 
     /**
      * @dev Mapping of Polymarket Market Condition IDs for publications.
@@ -153,7 +154,7 @@ contract PolymarketTradingActionModule is
      * @param profileId ID of the profile.
      * @param pubId ID of the publication.
      * @param data Initialization calldata.
-     * @return The Condition ID and array of the Position IDs (Binary Outcome Token IDs).
+     * @return The Condition ID and array of the CTF Position IDs (Binary Outcome Token IDs).
      */
     function initializePublicationAction(
         uint256 profileId,
@@ -217,8 +218,13 @@ contract PolymarketTradingActionModule is
             revert OrderNotSignedByActor();
         }
 
-        // Validate the order with the exchange. This will revert if the order is invalid.
-        _exchange.validateOrder(order);
+        bytes32 hash = _exchange.hashOrder(order);
+
+        // Check that the order is valid
+        OrderStatus memory status = _exchange.getOrderStatus(hash);
+        if (!status.isFilledOrCancelled && status.remaining == 0) {
+            revert OrderInvalid();
+        }
 
         // Emit the MarketOrderPlaced event
         emit MarketOrderPlaced(
@@ -231,7 +237,6 @@ contract PolymarketTradingActionModule is
         );
 
         // Return the order hash as the action module data
-        bytes32 hash = _exchange.hashOrder(order);
         return abi.encode(hash);
     }
 }

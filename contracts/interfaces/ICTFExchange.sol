@@ -23,8 +23,11 @@ interface ICTFExchange {
     function hashOrder(Order memory order) external view returns (bytes32);
 
     /**
-     * @dev Validates an order.
-     * @param order Order to be validated.
+     * @dev Gets the status of an order.
+     * @param orderHash Hash of the order.
+     * @return Order status.
      */
-    function validateOrder(Order memory order) external view;
+    function getOrderStatus(
+        bytes32 orderHash
+    ) external view returns (OrderStatus memory);
 }
