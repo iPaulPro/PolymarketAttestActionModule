@@ -319,20 +319,36 @@ Request Payload Parameters
 
 Each user has their own proxy wallet (and thus proxy wallet address) but the factories are available at the following deployed addresses on the Polygon network:
 
-| Contract Address                           | Factory          |
-|--------------------------------------------|------------------|
-| 0xaacfeea03eb1561c4e67d661e40682bd20e3541b | Gnosis safe      |
-| 0xaB45c5A4B0c941a2F231C04C3f49182e1A254052 | Polymarket proxy |
+| Contract Address                                                                                                         | Factory          |
+|--------------------------------------------------------------------------------------------------------------------------|------------------|
+| [0xaacfeea03eb1561c4e67d661e40682bd20e3541b](https://polygonscan.com/address/0xaacfeea03eb1561c4e67d661e40682bd20e3541b) | Gnosis safe      |
+| [0xaB45c5A4B0c941a2F231C04C3f49182e1A254052](https://polygonscan.com/address/0xaB45c5A4B0c941a2F231C04C3f49182e1A254052) | Polymarket proxy |
 
-Gnosis safes are used for all MetaMask users, while Polymarket custom proxy contracts are used for all MagicLink users.
+Gnosis safes are used for all MetaMask users, while Polymarket custom proxy contracts are used for all MagicLink users. Using proxy wallets allows Polymarket to provide an improved UX where multi-step transactions can be executed atomically and transactions can be relayed by relayers on the gas station network. It's not strictly required for the user to use a proxy wallet, but it's recommended.
 
 The [@polymarket/sdk](https://www.npmjs.com/package/@polymarket/sdk) library can be used to interact with the proxy wallets. Proxy addresses are calculated using the following code:
 ```ts
 import { getProxyWalletAddress } from "@polymarket/sdk";
 
+const safeAddress = '0xaacfeea03eb1561c4e67d661e40682bd20e3541b';
 const proxyAddress = getProxyWalletAddress(
-    '0xaacfeea03eb1561c4e67d661e40682bd20e3541b', // proxy wallet factory contract
-    '0x...', // address which owns the proxy wallet we want to calculate
+  safeAddress, // proxy wallet factory contract
+  '0x...', // address which owns the proxy wallet we want to calculate
+);
+```
+
+Here's an example of creating a CLOB Client for a Gnosis Safe proxy wallet:
+
+```ts
+const [account] = await window.ethereum.request({ method: "eth_requestAccounts" });
+const proxyWalletAddress = getProxyWalletAddress(safeAddress, account);
+const clobClient = new ClobClient(
+  host,
+  chain,
+  signer,
+  creds,
+  SignatureType.POLY_GNOSIS_SAFE,
+  proxyWalletAddress,
 );
 ```
 
