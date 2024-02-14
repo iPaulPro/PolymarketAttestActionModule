@@ -8,17 +8,22 @@ import {Types} from "lens-modules/contracts/libraries/constants/Types.sol";
 import {IPublicationActionModule} from "lens-modules/contracts/interfaces/IPublicationActionModule.sol";
 import {HubRestricted} from "lens-modules/contracts/base/HubRestricted.sol";
 import {LensModuleMetadata} from "lens-modules/contracts/modules/LensModuleMetadata.sol";
+import {IModuleRegistry} from "lens-modules/contracts/interfaces/IModuleRegistry.sol";
+import {LensModuleRegistrant} from "lens-modules/contracts/modules/base/LensModuleRegistrant.sol";
 
 import {Order, OrderStatus} from "./libraries/OrderStructs.sol";
-import {ICTFExchange} from "./interfaces/ICTFExchange.sol";
+import {ICtfExchange} from "./interfaces/ICtfExchange.sol";
 import {IConditionalTokens} from "./interfaces/IConditionalTokens.sol";
-import {LensModuleRegistrant} from "./base/LensModuleRegistrant.sol";
+import {QuestionDataV2, IUmaCtfAdapterV2} from "./interfaces/IUmaCtfAdapterV2.sol";
+import {IRegistry} from "./interfaces/IRegistry.sol";
 
 /**
- * @title PolymarketTradingActionModule
- * @dev Open Action Module for buying Polymarket markets.
+ * @title PolymarketAttestActionModule
+ * @author Paul Burke
+ *
+ * @dev Open Action Module that verifies Polymarket trades that happen in Lens Protocol publications.
  */
-contract PolymarketTradingActionModule is
+contract PolymarketAttestActionModule is
     IPublicationActionModule,
     HubRestricted,
     LensModuleMetadata,
@@ -28,74 +33,94 @@ contract PolymarketTradingActionModule is
      * @dev Emitted when a Polymarket market is registered.
      * @param publicationActedProfileId Profile ID of the publication to act on.
      * @param publicationActedId Publication ID of the publication to act on.
+     * @param oracle Address of the CTF Oracle contract.
+     * @param questionId The Polymarket CTF questionID.
      * @param conditionId Polymarket Market Condition ID.
+     * @param tokenIds Array of the CTF Position IDs (Binary Outcome Token IDs).
      */
     event MarketRegistered(
         uint256 indexed publicationActedProfileId,
         uint256 indexed publicationActedId,
-        bytes32 indexed conditionId
+        address oracle,
+        bytes32 questionId,
+        bytes32 indexed conditionId,
+        uint256[2] tokenIds
     );
 
     /**
-     * @dev Emitted when a Polymarket market order is placed.
+     * @dev Emitted when a Polymarket market order is verified.
      * @param publicationActedProfileId Profile ID of the publication acted on.
      * @param publicationActedId Publication ID of the publication acted on.
      * @param actorProfileId Profile ID of the actor.
      * @param actorProfileOwner Address of the owner of the actor profile.
+     * @param oracle Address of the CTF Oracle contract.
+     * @param questionId The Polymarket CTF questionID.
      * @param conditionId Polymarket Market Condition ID.
-     * @param order Polymarket market Order.
+     * @param order A Polymarket Order.
      */
-    event MarketOrderPlaced(
-        uint256 publicationActedProfileId,
-        uint256 publicationActedId,
+    event OrderVerified(
+        uint256 indexed publicationActedProfileId,
+        uint256 indexed publicationActedId,
         uint256 actorProfileId,
         address indexed actorProfileOwner,
-        bytes32 indexed conditionId,
+        address oracle,
+        bytes32 questionId,
+        bytes32 conditionId,
         Order order
     );
 
-    error ConditionIdMustBeProvided();
+    error OracleMustBeProvided();
+    error OracleNotSupported();
+    error QuestionIdMustBeProvided();
+    error QuestionNotFound();
     error MarketNotFound();
-    error ConditionIdNotRegistered();
+    error OrderMustBeProvided();
+    error BinaryOutcomesInvalid();
     error ConditionIdDoesNotMatch();
     error OrderNotSignedByActor();
     error OrderInvalid();
 
     /**
-     * @dev Mapping of Polymarket Market Condition IDs for publications.
+     * @dev Number of outcome slots for a Polymarket market. Always 2 for binary outcomes.
      */
-    mapping(uint256 profileId => mapping(uint256 pubId => bytes32 conditionId))
-        internal _conditionIds;
+    uint8 public constant OUTCOME_SLOT_COUNT = 2;
+
+    /**
+     * @dev Registry for associating Polymarket markets with publications.
+     */
+    mapping(uint256 profileId => mapping(uint256 pubId => bytes32 questionId))
+        internal _questionIds;
+
+    /**
+     * @dev Mapping of Polymarket Market orders for publications.
+     */
+    mapping(uint256 profileId => mapping(uint256 pubId => Order[] orders))
+        internal _orders;
 
     /**
      * @dev Polymarket CTF Exchange contract.
      */
-    ICTFExchange internal immutable _exchange;
+    ICtfExchange internal immutable _exchange;
 
     /**
-     * @dev Polymarket The collateral token for the CTF.
-     */
-    IERC20 internal immutable _collateralToken;
-
-    /**
-     * @dev Polymarket Conditional Tokens contract.
+     * @dev Polymarket Conditional Tokens Framework (CTF) contract.
      */
     IConditionalTokens internal immutable _conditionalTokens;
 
     /**
-     * @dev Initializes the PolymarketTradingActionModule contract.
-     * @param lensHub Address of the LensHub contract.
-     * @param lensModuleRegistry Address of the Lens ModuleRegistry contract.
-     * @param exchange Address of the Polymarket CTF Exchange contract.
-     * @param collateralToken Address of the Polymarket CTF collateral token (USDC.e).
-     * @param conditionalTokens Address of the Polymarket Conditional Tokens contract.
+     * @dev The collateral token for the CTF.
      */
+    IERC20 internal immutable _collateralToken;
+
+    IUmaCtfAdapterV2 internal immutable _umaCtfAdapterV2;
+
     constructor(
         address lensHub,
-        address lensModuleRegistry,
-        ICTFExchange exchange,
+        IModuleRegistry lensModuleRegistry,
+        ICtfExchange exchange,
         IERC20 collateralToken,
-        IConditionalTokens conditionalTokens
+        IConditionalTokens conditionalTokens,
+        IUmaCtfAdapterV2 umaCtfAdapterV2
     )
         Ownable(msg.sender)
         HubRestricted(lensHub)
@@ -105,6 +130,36 @@ contract PolymarketTradingActionModule is
         _exchange = exchange;
         _collateralToken = collateralToken;
         _conditionalTokens = conditionalTokens;
+        _umaCtfAdapterV2 = umaCtfAdapterV2;
+    }
+
+    function getExchange() external view returns (address) {
+        return address(_exchange);
+    }
+
+    function getCollateralToken() external view returns (address) {
+        return address(_collateralToken);
+    }
+
+    function getConditionalTokens() external view returns (address) {
+        return address(_conditionalTokens);
+    }
+
+    function getOracle() public view returns (address) {
+        return address(_umaCtfAdapterV2);
+    }
+
+    /**
+     * @dev Returns the Polymarket Market Data for a publication.
+     * @param profileId ID of the profile.
+     * @param pubId ID of the publication.
+     * @return The questionId for the Polymarket Market.
+     */
+    function getQuestionId(
+        uint256 profileId,
+        uint256 pubId
+    ) external view returns (bytes32) {
+        return _questionIds[profileId][pubId];
     }
 
     /**
@@ -116,8 +171,74 @@ contract PolymarketTradingActionModule is
     function getConditionId(
         uint256 profileId,
         uint256 pubId
-    ) external view returns (bytes32) {
-        return _conditionIds[profileId][pubId];
+    ) public view returns (bytes32) {
+        bytes32 questionId = _questionIds[profileId][pubId];
+        bytes32 conditionId = _conditionalTokens.getConditionId(
+            getOracle(),
+            questionId,
+            OUTCOME_SLOT_COUNT
+        );
+        return conditionId;
+    }
+
+    /**
+     * @dev Returns the Polymarket order count for a publication.
+     * @param profileId ID of the profile.
+     * @param pubId ID of the publication.
+     * @return Polymarket order count.
+     */
+    function getTotalOrderCount(
+        uint256 profileId,
+        uint256 pubId
+    ) external view returns (uint256) {
+        return _orders[profileId][pubId].length;
+    }
+
+    /**
+     * @dev Returns the Polymarket order at an index for a publication.
+     * @param profileId ID of the profile.
+     * @param pubId ID of the publication.
+     * @param index Index of the order.
+     * @return Polymarket order.
+     */
+    function getOrderAtIndex(
+        uint256 profileId,
+        uint256 pubId,
+        uint256 index
+    ) external view returns (Order memory) {
+        return _orders[profileId][pubId][index];
+    }
+
+    /**
+     * @dev Returns the Polymarket order count for a position index (1 for "YES", 2 for "NO") for a publication.
+     * @param profileId ID of the profile.
+     * @param pubId ID of the publication.
+     * @param positionIndex Index of the positionID.
+     * @return Polymarket order count for the position index.
+     */
+    function getOrderCountForPositionIndex(
+        uint256 profileId,
+        uint256 pubId,
+        uint256 positionIndex
+    ) external view returns (uint256) {
+        bytes32 conditionId = getConditionId(profileId, pubId);
+        bytes32 collectionId = _conditionalTokens.getCollectionId(
+            bytes32(0),
+            conditionId,
+            positionIndex
+        );
+        uint256 tokenId = _conditionalTokens.getPositionId(
+            _collateralToken,
+            collectionId
+        );
+
+        uint256 count = 0;
+        for (uint256 i = 0; i < _orders[profileId][pubId].length; i++) {
+            if (_orders[profileId][pubId][i].tokenId == tokenId) {
+                count++;
+            }
+        }
+        return count;
     }
 
     function supportsInterface(
@@ -138,23 +259,34 @@ contract PolymarketTradingActionModule is
         bytes32 conditionId,
         uint8 index
     ) internal view returns (uint256) {
-        // Construct the outcome collection ID
         bytes32 collectionId = _conditionalTokens.getCollectionId(
             bytes32(0),
             conditionId,
             index
         );
-        // Construct the PositionId
         return _conditionalTokens.getPositionId(_collateralToken, collectionId);
     }
 
     /**
-     * @dev Initializes the module. The initialization calldata is just the Polymarket Market Condition ID.
-     * Clients can use this to display Market data and related actions.
+     * @dev Returns the ancillary question data for a market.
+     * @param questionId The CTF questionID.
+     * @return Ancillary question data for the Polymarket market.
+     */
+    function getQuestionData(
+        bytes32 questionId
+    ) internal returns (bytes memory) {
+        QuestionDataV2 memory question = _umaCtfAdapterV2.getQuestion(
+            questionId
+        );
+        return question.ancillaryData;
+    }
+
+    /**
+     * @dev Initializes the module. The initialization calldata is the CTF questionID.
      * @param profileId ID of the profile.
      * @param pubId ID of the publication.
      * @param data Initialization calldata.
-     * @return The Condition ID and array of the CTF Position IDs (Binary Outcome Token IDs).
+     * @return The Condition ID, the question ancillary data, and an array of the CTF Position IDs (Binary Outcome Token IDs).
      */
     function initializePublicationAction(
         uint256 profileId,
@@ -162,81 +294,108 @@ contract PolymarketTradingActionModule is
         address /* transactionExecutor */,
         bytes calldata data
     ) external override onlyHub returns (bytes memory) {
-        // Decode the conditionId from the call data
-        bytes32 conditionId = abi.decode(data, (bytes32));
+        bytes32 questionId = abi.decode(data, (bytes32));
+        address oracle = getOracle();
 
-        // Check that the conditionId is not 0
-        if (conditionId == 0) {
-            revert ConditionIdMustBeProvided();
+        if (questionId == 0) {
+            revert QuestionIdMustBeProvided();
         }
 
-        // Get the token IDs for the binary outcomes
+        bytes memory questionData = getQuestionData(questionId);
+        if (questionData.length == 0) {
+            revert QuestionNotFound();
+        }
+
+        bytes32 conditionId = _conditionalTokens.getConditionId(
+            oracle,
+            questionId,
+            OUTCOME_SLOT_COUNT
+        );
+
+        if (conditionId == 0) {
+            revert MarketNotFound();
+        }
+
+        // Get the token IDs (positionIds) for the binary outcomes
         uint256 yesTokenId = getPositionIdFromCondition(conditionId, 1);
         uint256 noTokenId = getPositionIdFromCondition(conditionId, 2);
 
         if (yesTokenId == 0 || noTokenId == 0) {
-            revert MarketNotFound();
+            revert BinaryOutcomesInvalid();
         }
 
-        // Register the conditionId
-        _conditionIds[profileId][pubId] = conditionId;
+        // Register the question ID
+        _questionIds[profileId][pubId] = questionId;
 
-        // Emit the MarketRegistered event
-        emit MarketRegistered(profileId, pubId, conditionId);
+        emit MarketRegistered(
+            profileId,
+            pubId,
+            oracle,
+            questionId,
+            conditionId,
+            [yesTokenId, noTokenId]
+        );
 
-        return abi.encode(conditionId, [yesTokenId, noTokenId]);
+        return abi.encode(conditionId, questionData, [yesTokenId, noTokenId]);
     }
 
     /**
-     * @dev Processes a Polymarket market order. This function primarily ensures that the order
-     * token matches the registered Condition ID for the publication, the signer of
-     * the Order is the same as the Actor, and the order is valid.
+     * @dev Ensures that the order token matches the registered market for the publication,
+     * the signer of  the order is the same as the actor, and the order is valid.
      * @param params Parameters for the action module including the Order tuple.
      * @return The Order hash.
      */
     function processPublicationAction(
         Types.ProcessActionParams calldata params
     ) external override onlyHub returns (bytes memory) {
-        // Check that the publication is registered
-        bytes32 conditionId = _conditionIds[params.publicationActedProfileId][
-            params.publicationActedId
-        ];
-        if (conditionId == 0) {
-            revert ConditionIdNotRegistered();
+        Order memory order = abi.decode(params.actionModuleData, (Order));
+        if (order.tokenId == 0) {
+            revert OrderMustBeProvided();
         }
 
-        Order memory order = abi.decode(params.actionModuleData, (Order));
+        uint256 profileId = params.publicationActedProfileId;
+        uint256 pubId = params.publicationActedId;
 
-        // Check that the conditionId matches the order
+        // Ensure the market is registered for this publication
+        bytes32 conditionId = getConditionId(profileId, pubId);
+        if (conditionId == 0) {
+            revert MarketNotFound();
+        }
+
+        // Check that the registered conditionId matches the order
         bytes32 conditionIdFromToken = _exchange.getConditionId(order.tokenId);
         if (conditionId != conditionIdFromToken) {
             revert ConditionIdDoesNotMatch();
         }
 
-        // Check that the order is signed by the actor
+        // Ensure the order is signed by the actor
         if (order.signer != params.actorProfileOwner) {
             revert OrderNotSignedByActor();
         }
 
-        bytes32 hash = _exchange.hashOrder(order);
+        bytes32 orderHash = _exchange.hashOrder(order);
 
-        // Check that the order is valid
-        OrderStatus memory status = _exchange.getOrderStatus(hash);
+        // Ensure the order is valid
+        OrderStatus memory status = _exchange.getOrderStatus(orderHash);
         if (!status.isFilledOrCancelled && status.remaining == 0) {
             revert OrderInvalid();
         }
 
-        // Emit the MarketOrderPlaced event
-        emit MarketOrderPlaced(
-            params.publicationActedProfileId,
-            params.publicationActedId,
+        bytes32 questionId = _questionIds[profileId][pubId];
+
+        _orders[profileId][pubId].push(order);
+
+        emit OrderVerified(
+            profileId,
+            pubId,
             params.actorProfileId,
             params.actorProfileOwner,
+            getOracle(),
+            questionId,
             conditionId,
             order
         );
 
-        // Return the order hash as the action module data
-        return abi.encode(hash);
+        return abi.encode(conditionId, orderHash);
     }
 }

@@ -5,6 +5,16 @@ pragma solidity ^0.8.19;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface IConditionalTokens {
+    /// @dev Constructs a condition ID from an oracle, a question ID, and the outcome slot count for the question.
+    /// @param oracle The account assigned to report the result for the prepared condition.
+    /// @param questionId An identifier for the question to be answered by the oracle.
+    /// @param outcomeSlotCount The number of outcome slots which should be used for this condition. Must not exceed 256.
+    function getConditionId(
+        address oracle,
+        bytes32 questionId,
+        uint256 outcomeSlotCount
+    ) external pure returns (bytes32);
+
     /// @dev Constructs an outcome collection ID from a parent collection and an outcome collection.
     /// @param parentCollectionId Collection ID of the parent outcome collection, or bytes32(0) if there's no parent.
     /// @param conditionId Condition ID of the outcome collection to combine with the parent outcome collection.
