@@ -4,6 +4,16 @@
 
 The module serves as an attestation layer for Polymarket orders, ensuring that the Lens actor is the signer of the Polymarket order. It also provides the necessary data to display the market in the publication.
 
+## Using the PolymarketAttestActionModule Contract
+
+To use the live `EasPollActionModule` you can use the address and metadata below:
+
+| Network | Chain ID | Deployed Contract                                                                                                               | Metadata                                                                     |
+|---------|----------|---------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------|
+| Mumbai  | 80001    | [0x077afD867F1F6144677F39416797D64d743db31D](https://mumbai.polygonscan.com/address/0x077afD867F1F6144677F39416797D64d743db31D) | [link](https://gateway.irys.xyz/0O0iruSPPJDZAWo4Ns4LW7QVmJP6RJdmILslekpTljs) | 
+
+For instructions on how to initialize and process the Open Action Module, see the [Open Action Modules](#open-action-modules) section.
+
 ## Table of Contents
 
 - [Polymarket Brief](#polymarket-brief)
@@ -12,8 +22,8 @@ The module serves as an attestation layer for Polymarket orders, ensuring that t
 - [Polymarket.com URLs](#polymarketcom-urls)
 - [Gamma Markets API (GraphQL)](#gamma-markets-api-graphql)
 - [Central Limit Order Book (CLOB) API](#central-limit-order-book-clob-api)
-- [Open Action Modules](#open-action-modules)
-- [Client Implementation](#client-implementation)
+- [Open Action Module](#open-action-module)
+- [Placing Orders](#placing-orders)
   - [Proxy Wallets](#proxy-wallets)
   - [Prices and Books](#prices-and-books)
 - [Allowances](#allowances)
@@ -197,9 +207,9 @@ const l2ClobClient = new ClobClient(clobApiUrl, chain.id, signer, apiKeyCreds);
 - For all other CLOB API calls, a "Level 2" CLOB Client is required.
 - The Level 2 CLOB Client is initialized with an API Key, which can be created by signing a message with a L1 Client.
 
-## Open Action Modules
+## Open Action Module
 
-All that's needed for initialization of the Open Action module is the Question ID of the market being shared.
+All that's needed for initialization of the Open Action Module is the Question ID of the market being attached to the publication.
 
 The initialization calldata ABI is:
 
@@ -294,7 +304,7 @@ struct Order {
 }
 ```
 
-## Client Implementation
+## Placing Orders
 
 The [@polymarket/clob-client](https://www.npmjs.com/package/@polymarket/clob-client) library can be used to query a Market by Condition ID and place an Order.
 
