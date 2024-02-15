@@ -1,10 +1,13 @@
-# Polymarket Open Actions
+# Polymarket Attestation Open Action Module
 
-Specifications for enabling trading on Polymarket via Open Action Modules in Lens Protocol Publications.
+`PolymarketAttestActionModule` is an Open Action Module for Lens Protocol that facilitates an embedded Polymarket trading experience, directly within publications.
+
+The module serves as an attestation layer for Polymarket orders, ensuring that the Lens actor is the signer of the Polymarket order. It also provides the necessary data to display the market in the publication.
 
 ## Table of Contents
 
 - [Polymarket Brief](#polymarket-brief)
+- [Proposed User Flow](#proposed-user-flow)
 - [Exchange Deployments](#exchange-deployments)
 - [Polymarket.com URLs](#polymarketcom-urls)
 - [Gamma Markets API (GraphQL)](#gamma-markets-api-graphql)
@@ -13,6 +16,7 @@ Specifications for enabling trading on Polymarket via Open Action Modules in Len
 - [Client Implementation](#client-implementation)
   - [Proxy Wallets](#proxy-wallets)
   - [Prices and Books](#prices-and-books)
+- [Allowances](#allowances)
 
 ## Polymarket Brief
 
@@ -29,6 +33,16 @@ Orders are represented as signed typed structured data (EIP712). When orders are
 <img src="./assets/polymarket-spread.jpg" width="360">
 
 The docs for Polymarket can be found at https://docs.polymarket.com.
+
+## Proposed User Flow
+
+1. A user adds a Polymarket link while composing a Lens publication.
+2. The Lens client queries the Polymarket Gamma Markets API to get the Question ID and other market data.
+3. The Lens client prompts the user to embed the market in the publication, optionally showing a preview.
+4. The Lens client uses the Question ID to initiate the Open Action for the publication.
+5. The Lens client displays the Polymarket trading widget on publications with the Open Action attached, allowing the user to place an order on Polymarket.
+6. The Lens client uses the Polymarket CLOB API to place the order.
+7. The Lens client uses the PolymarketAttestActionModule to validate and attest that the actor is the signer of the Polymarket order.
 
 ## Exchange Deployments
 The Polymarket Exchange contract is deployed at the following addresses:
@@ -84,6 +98,7 @@ returns (most fields omitted for brevity):
         "id": 253591,
         "question": "Will Donald Trump win the 2024 US Presidential Election?",
         "conditionId": "0xdd22472e552920b8438158ea7238bfadfa4f736aa4cee91a6b86c39ead110917",
+        "questionID": "0xe3b1bc389210504ebcb9cffe4b0ed06ccac50561e0f24abb6379984cec030f00",
         "slug": "will-donald-trump-win-the-2024-us-presidential-election",
         "outcomes": [
           "Yes",
@@ -120,6 +135,7 @@ Returns something like (most fields omitted for brevity):
     "active": true,
     "question": "Will Donald Trump win the 2024 US Presidential Election?",
     "conditionId": "0xdd22472e552920b8438158ea7238bfadfa4f736aa4cee91a6b86c39ead110917",
+    "questionID": "0xe3b1bc389210504ebcb9cffe4b0ed06ccac50561e0f24abb6379984cec030f00",
     "slug": "will-donald-trump-win-the-2024-us-presidential-election",
     "clob_token_ids": [
       "21742633143463906290569050155826241533067272736897614950488156847949938836455",
@@ -130,12 +146,14 @@ Returns something like (most fields omitted for brevity):
 ```
 
 ### Notes
- - The `conditionId` is the main identifier used for Markets. 
+ - The main thing we're interested in from the Gamma Markets API is the `questionID`. This is all that is needed to initiate the Open Action Module.
+ - The `conditionId` is the main identifier used for Markets in the  [CLOB API](#central-limit-order-book-clob-api). 
  - The `clob_token_ids` field contains the ERC1155 Outcome Token IDs for the market. These are used to create orders.
  - The Gamma Markets API can be used without authentication, while the CLOB API requires an API key for any market-related calls.
  - The data returned from the Gamma Markets API is in a different shape than the data returned from the Polymarket CLOB API. For example, the Token IDs are returned in this form from the CLOB API:
 
-    ```json
+ ```json
+{
     "tokens": [
         {
             "token_id": "45192470599548595159090094230221802571282664878863077053730623624685503357046",
@@ -148,7 +166,8 @@ Returns something like (most fields omitted for brevity):
             "winner": false
         }
     ]
-    ```
+}
+```
 
 ## Central Limit Order Book (CLOB) API
 
@@ -180,9 +199,7 @@ const l2ClobClient = new ClobClient(clobApiUrl, chain.id, signer, apiKeyCreds);
 
 ## Open Action Modules
 
-The first Polymarket Open Action will enable buying shares on a market directly from a Lens publication. Orders are first placed with the Polymarket CLOB API Operator, then submitted to the `PolymarketTradingActionModule` which validates and attests that the actor is the signer of the Polymarket order.
-
-All that's needed for initialization of the Open Action module is the Condition ID of the market being shared.
+All that's needed for initialization of the Open Action module is the Question ID of the market being shared.
 
 The initialization calldata ABI is:
 
@@ -190,20 +207,24 @@ The initialization calldata ABI is:
 [
     {
         "type": "bytes32",
-        "name": "conditionId"
+        "name": "questionId"
     }
 ]
 ```
 
-The contract returns the ERC1155 Binary Outcome Token IDs for the market, which are used to create orders, in addition to the initial calldata.
+The `initializePublicationAction` returns the `conditionId`, the ancillary question data (the actual question, itself), and the ERC1155 Binary Outcome Token IDs for the market, which are used to create orders. All of this can also be retrieved from the CLOB API.
 
-Here's the ABI of the initializeResultData:
+Here's the ABI of the initialize result data:
 
 ```json
 [
     {
         "type": "bytes32",
         "name": "conditionId"
+    }, 
+    {
+        "type": "bytes",
+        "name": "questionData"
     },
     {
         "type": "uint256[]",
@@ -212,13 +233,28 @@ Here's the ABI of the initializeResultData:
 ]
 ```
 
-Clients can use this to determine the market to display as part of the publication. The Binary Outcome Token IDs are provided for convenience. To validate and register an order, the process calldata ABI expects an instance of an `Order`:
+Clients can use this to determine the market to display as part of the publication. To validate and register an order, the process calldata ABI expects an instance of an `Order`:
 
 ```json
 [
     {
-        "type": "tuple",
-        "name": "order"
+        "type": "tuple(uint256,address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,uint8,uint8,bytes)",
+        "name": "order",
+        "components": [
+          { "name": "salt", "type": "uint256" },
+          { "name": "maker", "type": "address" },
+          { "name": "signer", "type": "address" },
+          { "name": "taker", "type": "address" },
+          { "name": "tokenId", "type": "uint256" },
+          { "name": "makerAmount", "type": "uint256" },
+          { "name": "takerAmount", "type": "uint256" },
+          { "name": "expiration", "type": "uint256" },
+          { "name": "nonce", "type": "uint256" },
+          { "name": "feeRateBps", "type": "uint256" },
+          { "name": "side", "type": "uint8" },
+          { "name": "signatureType", "type": "uint8" },
+          { "name": "signature", "type": "bytes" }
+        ]
     }
 ]
 ```
@@ -276,6 +312,7 @@ const tokenID = market.tokens.find(token => token.outcome === "Yes").token_id;
 const order = await clobClient.createMarketBuyOrder({
   tokenId,
   amount: 15, // 15 USDC (collateral)
+  // price: 0.50 // If not specified, the best available price will be used. If no price is available, this must be specified
 });
 
 // Place the order
@@ -487,4 +524,50 @@ Which returns
     ],
     "hash": "a06bacc555bfa7386279e6b9373be56f77ac0c81"
 }
+```
+
+### Allowances
+
+If you're using an EOA wallet, instead of a proxy wallet, there are multiple approvals that need to be made. The `@polymarket/sdk` library can be used to get the CTF Exchange, ERC20 collateral token, and the ERC1155 Conditional Tokens addresses.
+
+1. Set collateral token (USDC) allowance for ERC1155 Conditional Tokens (CTF).
+2. Set USDC allowance for the Exchange.
+3. Set CTF "approval for all" for the Exchange.
+
+```ts
+import { getContractConfig } from "@polymarket/clob-client";
+import { polygon } from "viem/chains";
+
+const approveSpend = async () => {
+  const config = getContractConfig(polygon.id);
+
+  const { localWalletClient } = await getWalletClient();
+  try {
+    let hash;
+    hash = await localWalletClient.writeContract({
+      address: config.collateral,
+      abi: usdcAbi,
+      functionName: "approve",
+      args: [config.conditionalTokens, constants.MaxUint256],
+    });
+    console.log(`approveSpend: Setting USDC allowance for CTF: ${hash}`);
+
+    hash = await localWalletClient.writeContract({
+      address: config.collateral,
+      abi: usdcAbi,
+      functionName: "approve",
+      args: [config.exchange, constants.MaxUint256],
+    });
+    console.log(`approveSpend: Setting USDC allowance for Exchange: ${hash}`);
+
+    hash = await localWalletClient.writeContract({
+      address: config.conditionalTokens,
+      abi: conditionalTokenAbi,
+      functionName: "setApprovalForAll",
+      args: [config.exchange, true],
+    });
+    console.log(`approveSpend: Setting Conditional Tokens allowance for Exchange: ${hash}`);
+  } catch (e) {
+    console.error("approveSpend: error", e);
+  }
 ```
