@@ -21,8 +21,8 @@ For instructions on how to initialize and process the Open Action Module, see th
 - [Exchange Deployments](#exchange-deployments)
 - [Polymarket.com URLs](#polymarketcom-urls)
 - [Gamma Markets API (GraphQL)](#gamma-markets-api-graphql)
-- [Central Limit Order Book (CLOB) API](#central-limit-order-book-clob-api)
 - [Open Action Module](#open-action-module)
+- [Central Limit Order Book (CLOB) API](#central-limit-order-book-clob-api)
 - [Placing Orders](#placing-orders)
   - [Proxy Wallets](#proxy-wallets)
   - [Prices and Books](#prices-and-books)
@@ -179,34 +179,6 @@ Returns something like (most fields omitted for brevity):
 }
 ```
 
-## Central Limit Order Book (CLOB) API
-
-The Polymarket CLOB API plays the role of "Operator" and matches open orders. The  `@polymarkey/clob-client` library can be used to place orders, as well as query Markets and open orders.
-
-Here's an example of how to set up the CLOB client to place orders:
-
-```js
-const host = process.env.CLOB_API_URL ?? "https://clob.polymarket.com";
-const chainId = process.env.CHAIN_ID ?? 137;
-const provider = new providers.Web3Provider(window.ethereum);
-const signer = provider.getSigner();
-
-// Initialize the Level 1 CLOB client
-const clobClient = new ClobClient(host, chainId, signer);
-
-// Create the required API key for the Level 2 Client (if not already created)
-// This creates a wallet signing prompt
-const apiKeyCreds = await clobClient.createApiKey();
-
-// Initialize the L2 CLOB Client
-const l2ClobClient = new ClobClient(clobApiUrl, chain.id, signer, apiKeyCreds);
-```
-
-### Notes   
-- A "Level 1" CLOB Client is created with a wallet. It's required for making orders and creating API Keys.
-- For all other CLOB API calls, a "Level 2" CLOB Client is required.
-- The Level 2 CLOB Client is initialized with an API Key, which can be created by signing a message with a L1 Client.
-
 ## Open Action Module
 
 All that's needed for initialization of the Open Action Module is the Question ID of the market being attached to the publication.
@@ -304,9 +276,42 @@ struct Order {
 }
 ```
 
+## Central Limit Order Book (CLOB) API
+
+The Polymarket CLOB API plays the role of "Operator" and matches open orders. The  `@polymarkey/clob-client` library can be used to place orders, as well as query Markets and open orders.
+
+Here's an example of how to set up the CLOB client to be able to place orders:
+
+```js
+import { ClobClient } from "@polymarket/clob-client";
+import { polygon, polygonMumbai } from "viem/chains";
+import { providers } from "ethers";
+
+const chain = polygonMumbai;
+const host =
+        chain.id.valueOf() === polygon.id ? "https://clob.polymarket.com/" : "https://clob-staging.polymarket.com/";
+const provider = new providers.Web3Provider(window.ethereum);
+const signer = provider.getSigner();
+
+// Initialize the Level 1 CLOB client
+const clobClient = new ClobClient(host, chain.id, signer);
+
+// Create the required API key for the Level 2 Client (if not already created)
+// This creates a wallet signing prompt
+const apiKeyCreds = await clobClient.createApiKey();
+
+// Initialize the L2 CLOB Client
+const l2ClobClient = new ClobClient(host, chain.id, signer, apiKeyCreds);
+```
+
+### Notes   
+- A "Level 1" CLOB Client is created with a wallet. It's required for making orders and creating API Keys.
+- For all other CLOB API calls, a "Level 2" CLOB Client is required.
+- The Level 2 CLOB Client is initialized with an API Key, which can be created by signing a message with a L1 Client.
+
 ## Placing Orders
 
-The [@polymarket/clob-client](https://www.npmjs.com/package/@polymarket/clob-client) library can be used to query a Market by Condition ID and place an Order.
+The [@polymarket/clob-client](https://www.npmjs.com/package/@polymarket/clob-client) library can be used to create and place market and limit orders.
 
 ```ts
 // A Level 2 CLOB Client (with API credentials) is required to query markets (which includes placing "market" orders)
