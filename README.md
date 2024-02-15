@@ -6,7 +6,7 @@ The module serves as an attestation layer for Polymarket orders, ensuring that t
 
 ## Using the PolymarketAttestActionModule Contract
 
-To use the live `EasPollActionModule` you can use the address and metadata below:
+To use the live `PolymarketAttestActionModule` you can use the address and metadata below:
 
 | Network | Chain ID | Deployed Contract                                                                                                               | Metadata                                                                     |
 |---------|----------|---------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------|
@@ -54,13 +54,36 @@ The docs for Polymarket can be found at https://docs.polymarket.com.
 6. The Lens client uses the Polymarket CLOB API to place the order.
 7. The Lens client uses the PolymarketAttestActionModule to validate and attest that the actor is the signer of the Polymarket order.
 
-## Exchange Deployments
-The Polymarket Exchange contract is deployed at the following addresses:
+## Polymarket Deployments
+
+Polymarket Exchange:
 
 | Network | Address                                                                                                                              |
 |---------|--------------------------------------------------------------------------------------------------------------------------------------|
 | Mumbai  | [0x4bFb41d5B3570DeFd03C39a9A4D8dE6Bd8B8982E](https://mumbai.polygonscan.com/address/0x4bfb41d5b3570defd03c39a9a4d8de6bd8b8982e#code) |
 | Polygon | [0x4bFb41d5B3570DeFd03C39a9A4D8dE6Bd8B8982E](https://polygonscan.com/address/0x4bfb41d5b3570defd03c39a9a4d8de6bd8b8982e#code)        |
+
+UMA Oracle (V2.0.0):
+
+| Network | Address                                                                                                                         |
+|---------|---------------------------------------------------------------------------------------------------------------------------------|
+| Mumbai  | [0x6A9D222616C90FcA5754cd1333cFD9b7fb6a4F74](https://mumbai.polygonscan.com/address/0x6A9D222616C90FcA5754cd1333cFD9b7fb6a4F74) |
+| Polygon | [0x6A9D222616C90FcA5754cd1333cFD9b7fb6a4F74](https://polygonscan.com/address/0x6A9D222616C90FcA5754cd1333cFD9b7fb6a4F74)        |
+
+Conditional Tokens Framework (CTF):
+
+| Network | Address                                                                                                                         |
+|---------|---------------------------------------------------------------------------------------------------------------------------------|
+| Mumbai  | [0x7D8610E9567d2a6C9FBf66a5A13E9Ba8bb120d43](https://mumbai.polygonscan.com/address/0x7D8610E9567d2a6C9FBf66a5A13E9Ba8bb120d43) |
+| Polygon | [0x4D97DCd97eC945f40cF65F87097ACe5EA0476045](https://polygonscan.com/address/0x4D97DCd97eC945f40cF65F87097ACe5EA0476045)        |
+
+Collateral Tokens (USDC):
+
+| Network | Address                                                                                                                       |
+|---------|-------------------------------------------------------------------------------------------------------------------------------|
+| Mumbai  | [0x7D8610E9567d2a6C9FBf66a5A13E9Ba8bb120d43](https://mumbai.polygonscan.com/token/0x7D8610E9567d2a6C9FBf66a5A13E9Ba8bb120d43) |
+| Polygon | [0x2E8DCfE708D44ae2e406a1c02DFE2Fa13012f961](https://polygonscan.com/token/0x2E8DCfE708D44ae2e406a1c02DFE2Fa13012f961)        |
+
 
 ## Polymarket.com URLs
 
