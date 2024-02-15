@@ -77,12 +77,12 @@ Conditional Tokens Framework (CTF):
 | Mumbai  | [0x7D8610E9567d2a6C9FBf66a5A13E9Ba8bb120d43](https://mumbai.polygonscan.com/address/0x7D8610E9567d2a6C9FBf66a5A13E9Ba8bb120d43) |
 | Polygon | [0x4D97DCd97eC945f40cF65F87097ACe5EA0476045](https://polygonscan.com/address/0x4D97DCd97eC945f40cF65F87097ACe5EA0476045)        |
 
-Collateral Tokens (USDC):
+Collateral Tokens (USDC.e):
 
 | Network | Address                                                                                                                       |
 |---------|-------------------------------------------------------------------------------------------------------------------------------|
-| Mumbai  | [0x7D8610E9567d2a6C9FBf66a5A13E9Ba8bb120d43](https://mumbai.polygonscan.com/token/0x7D8610E9567d2a6C9FBf66a5A13E9Ba8bb120d43) |
-| Polygon | [0x2E8DCfE708D44ae2e406a1c02DFE2Fa13012f961](https://polygonscan.com/token/0x2E8DCfE708D44ae2e406a1c02DFE2Fa13012f961)        |
+| Mumbai  | [0x2E8DCfE708D44ae2e406a1c02DFE2Fa13012f961](https://mumbai.polygonscan.com/token/0x2E8DCfE708D44ae2e406a1c02DFE2Fa13012f961) |
+| Polygon | [0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174](https://polygonscan.com/token/0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174)        |
 
 
 ## Polymarket.com URLs
@@ -568,8 +568,8 @@ Which returns
 
 If you're using an EOA wallet, instead of a proxy wallet, there are multiple approvals that need to be made. The `@polymarket/sdk` library can be used to get the CTF Exchange, ERC20 collateral token, and the ERC1155 Conditional Tokens addresses.
 
-1. Set collateral token (USDC) allowance for ERC1155 Conditional Tokens (CTF).
-2. Set USDC allowance for the Exchange.
+1. Set collateral token (USDC.e) allowance for ERC1155 Conditional Tokens (CTF).
+2. Set USDC.e allowance for the Exchange.
 3. Set CTF "approval for all" for the Exchange.
 
 ```ts
